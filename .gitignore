@@ -1,6 +1,6 @@
-# Personal Files
-discordbot/videodata/*
-/discordbot/settingsdb.py
+# The ever present dsstore
+**/.DS_Store
+.DS_Store
 
 # PyCharm Config
 .idea/
