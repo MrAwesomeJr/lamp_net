@@ -29,7 +29,7 @@ class Pi:
             self.client_pub_address, self.client_priv_address = str_to_double_ip(self.server.recv())
 
             while self.client == None:
-                self.client = P2P.connect_p2p(self.pub_address, self.priv_address, self.client_pub_address, self.client_priv_address)
+                self.connect_client()
 
             while self.client.connected:
                 data = self.client.recv()
@@ -55,3 +55,4 @@ class Pi:
             self.pub_address = self.server.recv()
 
     def connect_client(self):
+        self.client = P2P.connect_p2p(self.pub_address, self.priv_address, self.client_pub_address, self.client_priv_address)

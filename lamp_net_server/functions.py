@@ -1,4 +1,5 @@
 import socket
+import threading
 
 
 def ip_to_str(address):
@@ -19,6 +20,59 @@ def str_to_double_ip(string_addresses):
     addresses = string_addresses.split("|")
     return str_to_ip(addresses[0]), str_to_ip(addresses[1])
 
+
+class P2P:
+    def async_accept(self, local_address):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        sock.bind(local_address)
+        sock.listen(1)
+        sock.settimeout(5)
+        while not self.stop_connecting.is_set():
+            try:
+                self.connection = sock.accept()
+            except socket.timeout:
+                continue
+            else:
+                self.stop_connecting.set()
+
+    def async_connect(self, local_address, client_address):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        sock.bind(local_address)
+        while not self.stop_connecting.is_set():
+            try:
+                sock.connect(client_address)
+            except socket.error:
+                continue
+            else:
+                self.connection = Connection((sock, client_address))
+                self.stop_connecting.set()
+
+    def connect_p2p(self, local_pub_address, local_priv_address, peer_pub_address, peer_priv_address):
+        # p2p mostly possible thanks to https://github.com/dwoz/python-nat-hole-punching/blob/master/tcp_client.py
+        # https://en.wikipedia.org/wiki/TCP_hole_punching describes the bs that's NAT port predictability.
+        # To summarize: it isn't.
+
+        self.stop_connecting = threading.Event()
+        self.connection = None
+
+        threads = [
+            threading.Thread(target=self.async_accept, args=(local_priv_address)),
+            threading.Thread(target=self.async_accept, args=(local_pub_address)),
+            threading.Thread(target=self.async_connect, args=(local_priv_address, peer_pub_address)),
+            threading.Thread(target=self.async_connect, args=(local_priv_address, peer_priv_address))
+        ]
+
+        for thread in threads:
+            thread.start()
+
+        while not self.stop_connecting:
+            pass
+
+        return self.connection
 
 class Connection:
     def __init__(self, accept):
