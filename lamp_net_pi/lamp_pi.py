@@ -27,7 +27,7 @@ class Pi:
             self.connect_server()
             self.client_pub_address, self.client_priv_address = str_to_double_ip(self.server.recv())
 
-            while self.client == None:
+            while self.client == None or not self.client.connected:
                 self.connect_client()
             self.client.send(f'{self.pixels.n}|{self.pixels.pixel_order}')
 

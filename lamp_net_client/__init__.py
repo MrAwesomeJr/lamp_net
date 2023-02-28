@@ -1,3 +1,1 @@
-import lamp_client
-
-client = lamp_client.Client()
+from lamp_net_client.lamp_client import *

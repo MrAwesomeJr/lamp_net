@@ -74,6 +74,7 @@ class P2P:
 
         return self.connection
 
+
 class Connection:
     def __init__(self, accept, connected=True):
         self.socket = accept[0]

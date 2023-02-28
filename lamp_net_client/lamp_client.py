@@ -1,5 +1,5 @@
 import socket
-from functions import *
+from lamp_net_client.functions import *
 
 
 class Pixels:
