@@ -21,8 +21,7 @@ class Pi:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         sock.setblocking(True)
-        self.server = Connection((sock, self.server_address))
-        self.server.connected = False
+        self.server = Connection((sock, self.server_address), connected=False)
 
         while True:
             self.connect_server()
@@ -48,7 +47,7 @@ class Pi:
 
     def connect_server(self):
         while not self.server.connected:
-            self.server.connect(self.server_address)
+            self.server.connect()
             self.priv_address = self.server.socket.getsockname()
             self.server.send(ip_to_str(self.priv_address))
             self.pub_address = self.server.recv()

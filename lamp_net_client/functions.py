@@ -75,15 +75,18 @@ class P2P:
         return self.connection
 
 class Connection:
-    def __init__(self, accept):
+    def __init__(self, accept, connected=True):
         self.socket = accept[0]
         self.address = accept[1]
-        self.connected = True
+        self.connected = connected
 
     def connect(self):
-        if not self.connected:
-            self.socket.connect(self.address)
-            self.connected = True
+        while not self.connected:
+            try:
+                self.socket.connect(self.address)
+                self.connected = True
+            except ConnectionRefusedError:
+                pass
 
     def disconnect(self):
         self.socket.shutdown(socket.SHUT_RDWR)

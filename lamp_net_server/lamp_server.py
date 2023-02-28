@@ -44,7 +44,7 @@ class Server:
         while not self.stop.is_set():
             # assume first connection from pi server's address is correct
             # if pi server disconnects wait for reconnect
-            while not self.pi.connected:
+            while self.pi == None or not self.pi.connected:
                 self.listener_socket.setblocking(True)
                 self.pi = Connection(self.listener_socket.accept())
 

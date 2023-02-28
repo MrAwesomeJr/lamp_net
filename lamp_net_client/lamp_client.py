@@ -3,7 +3,7 @@ from functions import *
 
 
 class Pixels:
-    def __init__(self, n, pixel_order, auto_write=True, pi):
+    def __init__(self, n, pixel_order, pi, auto_write=True):
         self._pixels = [(0, 0, 0) for i in n]
         self.pixel_order = pixel_order
         self.n = n
