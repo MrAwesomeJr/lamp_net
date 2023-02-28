@@ -50,7 +50,7 @@ class Pi:
             self.server.connect()
             self.priv_address = self.server.socket.getsockname()
             self.server.send(ip_to_str(self.priv_address))
-            self.pub_address = self.server.recv()
+            self.pub_address = str_to_ip(self.server.recv())
 
     def connect_client(self):
-        self.client = P2P.connect_p2p(self.pub_address, self.priv_address, self.client_pub_address, self.client_priv_address)
+        self.client = P2P().connect_p2p(self.pub_address, self.priv_address, self.client_pub_address, self.client_priv_address)

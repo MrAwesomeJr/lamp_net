@@ -76,17 +76,19 @@ class Client:
         self.pi_pub_address = ""
 
     def connect(self, server_address):
-        self.server = Connection((socket.socket(socket.AF_INET, socket.SOCK_STREAM), server_address))
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        self.server = Connection((sock, server_address), connected=False)
 
         self.server.connect()
         self.priv_address = self.server.socket.getsockname()
         self.server.send(ip_to_str(self.priv_address))
         self.pub_address = str_to_ip(self.server.recv())
-        self.pi_pub_address, self.priv_address = str_to_double_ip(self.server.recv())
-        self.server.disconnect()
+        self.pi_pub_address, self.pi_priv_address = str_to_double_ip(self.server.recv())
 
-        self.pi = P2P.connect_p2p(self.pub_address, self.priv_address, self.pi_pub_address, self.pi_priv_address)
+        self.pi = P2P().connect_p2p(self.pub_address, self.priv_address, self.pi_pub_address, self.pi_priv_address)
 
-        # recieve f'{self.pixels.n}|{self.pixels.pixel_order}' from lamp_net_pi/lamp_pi.py
+        # receive f'{self.pixels.n}|{self.pixels.pixel_order}' from lamp_net_pi/lamp_pi.py
         pixel_params = self.server.recv().split("|")
         self.pixels = Pixels(pixel_params[0], pixel_params[1], self.pi)

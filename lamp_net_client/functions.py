@@ -1,5 +1,6 @@
 import socket
 import threading
+import struct
 
 
 def ip_to_str(address):
@@ -9,7 +10,9 @@ def ip_to_str(address):
 
 def str_to_ip(string_address):
     # expect string_address to be in format given by ip_to_str()
-    return tuple(string_address.split(":"))
+    address = tuple(string_address.split(":"))
+    address = (address[0], int(address[1]))
+    return address
 
 
 def double_ip_to_str(public_address, private_address):
@@ -26,7 +29,7 @@ class P2P:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        sock.bind(local_address)
+        sock.bind(("0.0.0.0", local_address[1]))
         sock.listen(1)
         sock.settimeout(5)
         while not self.stop_connecting.is_set():
@@ -41,7 +44,7 @@ class P2P:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        sock.bind(local_address)
+        sock.bind(("0.0.0.0", local_address[1]))
         while not self.stop_connecting.is_set():
             try:
                 sock.connect(client_address)
@@ -60,13 +63,14 @@ class P2P:
         self.connection = None
 
         threads = [
-            threading.Thread(target=self.async_accept, args=(local_priv_address)),
-            threading.Thread(target=self.async_accept, args=(local_pub_address)),
+            threading.Thread(target=self.async_accept, args=(local_priv_address,)),
+            threading.Thread(target=self.async_accept, args=(local_pub_address,)),
             threading.Thread(target=self.async_connect, args=(local_priv_address, peer_pub_address)),
             threading.Thread(target=self.async_connect, args=(local_priv_address, peer_priv_address))
         ]
 
         for thread in threads:
+            thread.daemon = True
             thread.start()
 
         while not self.stop_connecting:
@@ -96,22 +100,29 @@ class Connection:
 
     def send(self, msg):
         try:
-            self.socket.send(str(msg).encode())
+            data = struct.pack('>I', len(msg)) + msg.encode()
+            self.socket.send(data)
         except ConnectionResetError:
             self.connected = False
 
-    def recv(self, buffer_size=1024):
-        msg = b''
-        try:
-            msg = self.socket.recv(buffer_size)
-        except BlockingIOError:
-            return False
-        except ConnectionResetError:
-            self.connected = False
-            return False
+    def recv(self):
+        length = b''
+        data = b''
+        while length == b'':
+            try:
+                length = self.socket.recv(4)
+            except BlockingIOError:
+                continue
+            except ConnectionResetError:
+                self.connected = False
+                return False
 
-        if msg == b'':
-            self.connected = False
-            return False
-        else:
-            return msg.decode()
+        msg_length = struct.unpack('>I', length)[0]
+
+        while len(data) < msg_length:
+            packet = self.socket.recv(msg_length - len(data))
+            if not packet:
+                return False
+            data += packet
+
+        return data.decode()
