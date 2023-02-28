@@ -31,9 +31,10 @@ class Server:
                 except BlockingIOError:
                     continue
 
+                # the server only needs to handle one request at a time because the pi can only accept one request at a time anyways
                 client_priv_address = str_to_ip(self.client.recv())
                 self.client_address_string = double_ip_to_str(self.client.address, client_priv_address)
-                self.client.send(self.client.address)
+                self.client.send(ip_to_str(self.client.address))
 
                 self.client.send(self.pi_address_string)
                 self.pi.send(self.client_address_string)

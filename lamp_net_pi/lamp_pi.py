@@ -30,6 +30,7 @@ class Pi:
 
             while self.client == None:
                 self.connect_client()
+            self.client.send(f'{self.pixels.n}|{self.pixels.pixel_order}')
 
             while self.client.connected:
                 data = self.client.recv()
@@ -44,8 +45,6 @@ class Pi:
                 self.pixels.show()
 
             self.pixels.fill((0, 0, 0))
-
-
 
     def connect_server(self):
         while not self.server.connected:
