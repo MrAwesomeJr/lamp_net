@@ -1,6 +1,7 @@
 import socket
 import threading
 import struct
+import logging
 
 
 def ip_to_str(address):
@@ -29,7 +30,14 @@ def str_to_multiple_ip(string_ips):
 
 
 class P2P:
+    def __init__(self):
+        self.stop_connecting = threading.Event()
+        self.connection = None
+
+        self.logger = logging.getLogger(__name__)
+
     def async_accept(self, local_address):
+        self.logger.info("Attempting async accept from", local_address)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
@@ -42,9 +50,11 @@ class P2P:
             except socket.timeout:
                 continue
             else:
+                self.logger.info("Async accept success from", local_address)
                 self.stop_connecting.set()
 
     def async_connect(self, local_address, client_address):
+        self.logger.info("Attempting async connect from", local_address, "to", client_address)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
@@ -55,6 +65,7 @@ class P2P:
             except socket.error:
                 continue
             else:
+                self.logger.info("Async connect success from", local_address, "to", client_address)
                 self.connection = Connection((sock, client_address))
                 self.stop_connecting.set()
 
@@ -76,6 +87,7 @@ class P2P:
         for thread in threads:
             thread.daemon = True
             thread.start()
+        self.logger.info("All async threads started")
 
         while not self.stop_connecting.is_set():
             pass
@@ -88,6 +100,8 @@ class Connection:
         self.socket = accept[0]
         self.address = accept[1]
         self.connected = connected
+
+        self.logger = logging.getLogger(__name__)
 
     def connect(self):
         while not self.connected:
@@ -103,6 +117,7 @@ class Connection:
         self.connected = False
 
     def send(self, msg):
+        self.logger.info("Sending to", self.address, ":", msg)
         try:
             data = struct.pack('>I', len(msg)) + msg.encode()
             self.socket.send(data)
@@ -129,4 +144,5 @@ class Connection:
                 return False
             data += packet
 
+        self.logger.info("Recieved from", self.address, ":", data.decode())
         return data.decode()
