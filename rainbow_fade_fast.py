@@ -1,5 +1,9 @@
 import lamp_net_client
 import time
+import logging
+
+logging.getLogger()
+logging.basicConfig(level=logging.INFO)
 
 client = lamp_net_client.Client()
 client.connect(("54.254.195.195", 38282))

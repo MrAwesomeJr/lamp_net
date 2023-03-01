@@ -3,6 +3,7 @@ from functions import *
 import re
 import neopixel
 import board
+import logging
 
 
 class Pi:
@@ -16,6 +17,8 @@ class Pi:
         self.pub_address = ""
         self.client = None
 
+        self.logger = logging.getLogger(__name__)
+
     def run(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -25,7 +28,9 @@ class Pi:
 
         while True:
             self.connect_server()
-            self.client_pub_address, self.client_priv_address = str_to_double_ip(self.server.recv())
+            self.logger.info("Connected server at", self.server_address)
+            self.client_pub_address, self.client_priv_address = str_to_multiple_ip(self.server.recv())
+            self.logger.info("Client's addresses are", self.client_pub_address, self.client_priv_address)
 
             while self.client == None or not self.client.connected:
                 self.connect_client()
@@ -43,6 +48,8 @@ class Pi:
 
                 self.pixels.show()
 
+            self.logger.info("Client disconnected, resetting")
+
             self.pixels.fill((0, 0, 0))
 
     def connect_server(self):
@@ -53,4 +60,6 @@ class Pi:
             self.pub_address = str_to_ip(self.server.recv())
 
     def connect_client(self):
+        self.logger.info("Attempting P2P connection")
         self.client = P2P().connect_p2p(self.pub_address, self.priv_address, self.client_pub_address, self.client_priv_address)
+        self.logger.info("P2P connection success!")

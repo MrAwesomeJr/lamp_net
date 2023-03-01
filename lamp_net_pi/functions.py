@@ -15,13 +15,17 @@ def str_to_ip(string_address):
     return address
 
 
-def double_ip_to_str(public_address, private_address):
-    return f'{ip_to_str(public_address)}|{ip_to_str(private_address)}'
+def multiple_ip_to_str(ips):
+    for index, ip in enumerate(ips):
+        ips[index] = ip_to_str(ip)
+    return "|".join(ips)
 
 
-def str_to_double_ip(string_addresses):
-    addresses = string_addresses.split("|")
-    return str_to_ip(addresses[0]), str_to_ip(addresses[1])
+def str_to_multiple_ip(string_ips):
+    ips = string_ips.split("|")
+    for index, ip in enumerate(ips):
+        ips[index] = str_to_ip(ip)
+    return ips
 
 
 class P2P:
@@ -73,7 +77,7 @@ class P2P:
             thread.daemon = True
             thread.start()
 
-        while not self.stop_connecting:
+        while not self.stop_connecting.is_set():
             pass
 
         return self.connection

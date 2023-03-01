@@ -1,5 +1,6 @@
 import socket
 from lamp_net_client.functions import *
+import logging
 
 
 class Pixels:
@@ -12,6 +13,8 @@ class Pixels:
         self.auto_write = auto_write
 
         self.current_index = 0
+
+        self.logger = logging.getLogger(__name__)
 
     def fill(self, color):
         self._pixels = [color for i in self.n]
@@ -75,6 +78,8 @@ class Client:
         self.pi_priv_address = ""
         self.pi_pub_address = ""
 
+        self.logger = logging.getLogger(__name__)
+
     def connect(self, server_address):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -82,13 +87,19 @@ class Client:
         self.server = Connection((sock, server_address), connected=False)
 
         self.server.connect()
+        self.logger.info("Connected server at", server_address)
         self.priv_address = self.server.socket.getsockname()
         self.server.send(ip_to_str(self.priv_address))
         self.pub_address = str_to_ip(self.server.recv())
-        self.pi_pub_address, self.pi_priv_address = str_to_double_ip(self.server.recv())
+        self.logger.info("My addresses are", self.pub_address, self.priv_address)
+        self.pi_pub_address, self.pi_priv_address = str_to_multiple_ip(self.server.recv())
+        self.logger.info("The Pi's addresses are", self.pi_pub_address, self.pi_priv_address)
 
+        self.logger.info("Attempting P2P connection")
         self.pi = P2P().connect_p2p(self.pub_address, self.priv_address, self.pi_pub_address, self.pi_priv_address)
+        self.logger.info("P2P connection success!")
 
         # receive f'{self.pixels.n}|{self.pixels.pixel_order}' from lamp_net_pi/lamp_pi.py
         pixel_params = self.server.recv().split("|")
+        self.logger.info("Pixel parameters recieved", pixel_params)
         self.pixels = Pixels(pixel_params[0], pixel_params[1], self.pi)
