@@ -30,11 +30,11 @@ class Pi:
             self.connect_server()
             self.logger.info(f"Connected server at {ip_to_str(self.server_address)}")
             self.client_pub_address, self.client_priv_address = str_to_multiple_ip(self.server.recv())
-            self.logger.info(f"Client's addresses are {multiple_ip_to_str((self.client_pub_address, self.client_priv_address))}")
+            self.logger.info(f"Client's addresses are {multiple_ip_to_str([self.client_pub_address, self.client_priv_address])}")
 
             while self.client == None or not self.client.connected:
                 self.connect_client()
-            self.client.send(f'{self.pixels.n}|{self.pixels.pixel_order}')
+            self.client.send(f'{self.pixels.n}|{self.pixels.byteorder}')
 
             while self.client.connected:
                 data = self.client.recv()
@@ -43,7 +43,9 @@ class Pi:
 
                 for index, led in enumerate(data):
                     data[index] = re.findall("."*2, led)
-                    data[index] = map(lambda x: int(x, 16), led)
+                    for subindex, led_color in enumerate(data[index]):
+                        data[index][subindex] = int(led_color, 16)
+                    data[index] = list(data[index])
                     self.pixels[index] = data[index]
 
                 self.pixels.show()

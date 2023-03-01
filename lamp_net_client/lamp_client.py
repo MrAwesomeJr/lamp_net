@@ -4,9 +4,9 @@ import logging
 
 
 class Pixels:
-    def __init__(self, n, pixel_order, pi, auto_write=True):
+    def __init__(self, n, byte_order, pi, auto_write=True):
         self._pixels = [(0, 0, 0) for i in n]
-        self.pixel_order = pixel_order
+        self.byte_order = byte_order
         self.n = n
         self.pi = pi
         self._brightness = 1
@@ -26,7 +26,10 @@ class Pixels:
         return self._pixels[item]
 
     def __setitem__(self, key, value):
-        self._pixels[key] = map(lambda x: x*self.brightness, value)
+        try:
+            self._pixels[key] = list(map(lambda x: x*self.brightness, value))
+        except TypeError:
+            print(key)
 
         if self.auto_write:
             self.show()
@@ -62,9 +65,13 @@ class Pixels:
     def show(self):
         hex_pixels = self._pixels
         for index, pixel in enumerate(hex_pixels):
-            hex_pixels[index] = map(lambda x: f'{int(x*self._brightness):x}', pixel)
-        string_pixels = map("".join(hex_pixels))
+            hex_pixels[index] = map(lambda x: f'{int(x*self._brightness):0<2x}', pixel)
+        string_pixels = map(lambda x: "".join(x), hex_pixels)
         msg = "".join(string_pixels)
+        if len(msg) not in [0, 300]:
+            print(self._pixels)
+            print(hex_pixels)
+            print(msg)
         self.pi.send(msg)
 
 
@@ -91,15 +98,15 @@ class Client:
         self.priv_address = self.server.socket.getsockname()
         self.server.send(ip_to_str(self.priv_address))
         self.pub_address = str_to_ip(self.server.recv())
-        self.logger.info(f"My addresses are {multiple_ip__to_str((self.pub_address, self.priv_address))}")
+        self.logger.info(f"My addresses are {multiple_ip_to_str([self.pub_address, self.priv_address])}")
         self.pi_pub_address, self.pi_priv_address = str_to_multiple_ip(self.server.recv())
-        self.logger.info(f"The Pi's addresses are {multiple_ip_to_str((self.pi_pub_address, self.pi_priv_address))}")
+        self.logger.info(f"The Pi's addresses are {multiple_ip_to_str([self.pi_pub_address, self.pi_priv_address])}")
 
         self.logger.info("Attempting P2P connection")
         self.pi = P2P().connect_p2p(self.pub_address, self.priv_address, self.pi_pub_address, self.pi_priv_address)
         self.logger.info("P2P connection success!")
 
-        # receive f'{self.pixels.n}|{self.pixels.pixel_order}' from lamp_net_pi/lamp_pi.py
-        pixel_params = self.server.recv().split("|")
+        # receive f'{self.pixels.n}|{self.pixels.byte_order}' from lamp_net_pi/lamp_pi.py
+        pixel_params = self.pi.recv().split("|")
         self.logger.info(f"Pixel parameters recieved {pixel_params}")
         self.pixels = Pixels(pixel_params[0], pixel_params[1], self.pi)

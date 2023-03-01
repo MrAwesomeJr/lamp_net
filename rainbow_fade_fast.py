@@ -2,15 +2,17 @@ import lamp_net_client
 import time
 import logging
 
-logging.getLogger()
-logging.basicConfig(level=logging.INFO)
+# logging.getLogger()
+# logging.basicConfig(level=logging.INFO)
 
 client = lamp_net_client.Client()
 client.connect(("54.254.195.195", 38282))
 
+client.pixels.brightness = 0.1
+
 # times are in seconds
 timeout = 20*60
-sleep_time = 0
+sleep_time = 0.1
 minimum = 0
 maximum = 255
 pixel_count = 50
@@ -45,7 +47,7 @@ print("timeout",timeout)
 start_time = time.perf_counter()
 while timeout >= (time.perf_counter() - start_time):
     for frame in range(0, loop_size):
-        client.pixels[:] = values[:50]
+        client.pixels[:] = values[:pixel_count]
         client.pixels.show()
         values.append(values[0])
         values.pop(0)

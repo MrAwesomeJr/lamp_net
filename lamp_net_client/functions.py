@@ -37,7 +37,7 @@ class P2P:
         self.logger = logging.getLogger(__name__)
 
     def async_accept(self, local_address):
-        self.logger.info("Attempting async accept from", local_address)
+        self.logger.info(f"Attempting async accept from {local_address}")
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
@@ -46,15 +46,15 @@ class P2P:
         sock.settimeout(5)
         while not self.stop_connecting.is_set():
             try:
-                self.connection = sock.accept()
+                self.connection = Connection(sock.accept())
             except socket.timeout:
                 continue
             else:
-                self.logger.info("Async accept success from", local_address)
+                self.logger.info(f"Async accept success from {local_address}")
                 self.stop_connecting.set()
 
     def async_connect(self, local_address, client_address):
-        self.logger.info("Attempting async connect from", local_address, "to", client_address)
+        self.logger.info(f"Attempting async connect from {local_address} to {client_address}")
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
@@ -65,7 +65,7 @@ class P2P:
             except socket.error:
                 continue
             else:
-                self.logger.info("Async connect success from", local_address, "to", client_address)
+                self.logger.info(f"Async connect success from {local_address} to {client_address}")
                 self.connection = Connection((sock, client_address))
                 self.stop_connecting.set()
 
@@ -104,6 +104,7 @@ class Connection:
         self.logger = logging.getLogger(__name__)
 
     def connect(self):
+        self.logger.info(f"connect to {self.address}")
         while not self.connected:
             try:
                 self.socket.connect(self.address)
@@ -117,7 +118,7 @@ class Connection:
         self.connected = False
 
     def send(self, msg):
-        self.logger.info(f"Sending to {ip_to_str(self.address)}:{msg}")
+        self.logger.info(f"Sending to {ip_to_str(self.address)}: {msg}")
         try:
             data = struct.pack('>I', len(msg)) + msg.encode()
             self.socket.send(data)
@@ -144,5 +145,5 @@ class Connection:
                 return False
             data += packet
 
-        self.logger.info(f"Recieved from {ip_to_str(self.address)}:{data.decode()}")
+        self.logger.info(f"Recieved from {ip_to_str(self.address)}: {data.decode()}")
         return data.decode()

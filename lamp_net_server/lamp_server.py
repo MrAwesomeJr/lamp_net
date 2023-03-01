@@ -35,7 +35,7 @@ class Server:
             else:
                 # the server only needs to handle one request at a time because the pi can only accept one request at a time anyways
                 client_priv_address = str_to_ip(self.client.recv())
-                self.logger.info(f"Client's addresses are {multiple_ip_to_str((self.client.address, client_priv_address))}")
+                self.logger.info(f"Client's addresses are {multiple_ip_to_str([self.client.address, client_priv_address])}")
                 self.client_address_string = multiple_ip_to_str([self.client.address, client_priv_address])
                 self.client.send(ip_to_str(self.client.address))
 
@@ -63,6 +63,6 @@ class Server:
 
 
         pi_priv_address = str_to_ip(self.pi.recv())
-        self.logger.info(f"Pi addresses are {multiple_ip_to_str((self.pi.address, pi_priv_address))}")
+        self.logger.info(f"Pi addresses are {multiple_ip_to_str([self.pi.address, pi_priv_address])}")
         self.pi_address_string = multiple_ip_to_str([self.pi.address, pi_priv_address])
         self.pi.send(ip_to_str(self.pi.address))
