@@ -87,13 +87,13 @@ class Client:
         self.server = Connection((sock, server_address), connected=False)
 
         self.server.connect()
-        self.logger.info("Connected server at", ip_to_str(server_address))
+        self.logger.info(f"Connected server at {ip_to_str(server_address)}")
         self.priv_address = self.server.socket.getsockname()
         self.server.send(ip_to_str(self.priv_address))
         self.pub_address = str_to_ip(self.server.recv())
-        self.logger.info("My addresses are", multiple_ip__to_str((self.pub_address, self.priv_address)))
+        self.logger.info(f"My addresses are {multiple_ip__to_str((self.pub_address, self.priv_address))}")
         self.pi_pub_address, self.pi_priv_address = str_to_multiple_ip(self.server.recv())
-        self.logger.info("The Pi's addresses are", multiple_ip_to_str((self.pi_pub_address, self.pi_priv_address)))
+        self.logger.info(f"The Pi's addresses are {multiple_ip_to_str((self.pi_pub_address, self.pi_priv_address))}")
 
         self.logger.info("Attempting P2P connection")
         self.pi = P2P().connect_p2p(self.pub_address, self.priv_address, self.pi_pub_address, self.pi_priv_address)
@@ -101,5 +101,5 @@ class Client:
 
         # receive f'{self.pixels.n}|{self.pixels.pixel_order}' from lamp_net_pi/lamp_pi.py
         pixel_params = self.server.recv().split("|")
-        self.logger.info("Pixel parameters recieved", pixel_params)
+        self.logger.info(f"Pixel parameters recieved {pixel_params}")
         self.pixels = Pixels(pixel_params[0], pixel_params[1], self.pi)

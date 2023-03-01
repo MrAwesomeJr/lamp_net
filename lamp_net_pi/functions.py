@@ -117,7 +117,7 @@ class Connection:
         self.connected = False
 
     def send(self, msg):
-        self.logger.info("Sending to", ip_to_str(self.address), ":", msg)
+        self.logger.info(f"Sending to {ip_to_str(self.address)}:{msg}")
         try:
             data = struct.pack('>I', len(msg)) + msg.encode()
             self.socket.send(data)
@@ -144,5 +144,5 @@ class Connection:
                 return False
             data += packet
 
-        self.logger.info("Recieved from", ip_to_str(self.address), ":", data.decode())
+        self.logger.info(f"Recieved from {ip_to_str(self.address)}:{data.decode()}")
         return data.decode()
