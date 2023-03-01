@@ -87,13 +87,13 @@ class Client:
         self.server = Connection((sock, server_address), connected=False)
 
         self.server.connect()
-        self.logger.info("Connected server at", server_address)
+        self.logger.info("Connected server at", ip_to_str(server_address))
         self.priv_address = self.server.socket.getsockname()
         self.server.send(ip_to_str(self.priv_address))
         self.pub_address = str_to_ip(self.server.recv())
-        self.logger.info("My addresses are", self.pub_address, self.priv_address)
+        self.logger.info("My addresses are", multiple_ip__to_str((self.pub_address, self.priv_address)))
         self.pi_pub_address, self.pi_priv_address = str_to_multiple_ip(self.server.recv())
-        self.logger.info("The Pi's addresses are", self.pi_pub_address, self.pi_priv_address)
+        self.logger.info("The Pi's addresses are", multiple_ip_to_str((self.pi_pub_address, self.pi_priv_address)))
 
         self.logger.info("Attempting P2P connection")
         self.pi = P2P().connect_p2p(self.pub_address, self.priv_address, self.pi_pub_address, self.pi_priv_address)

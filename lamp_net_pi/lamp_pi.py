@@ -28,9 +28,9 @@ class Pi:
 
         while True:
             self.connect_server()
-            self.logger.info("Connected server at", self.server_address)
+            self.logger.info("Connected server at", ip_to_str(self.server_address))
             self.client_pub_address, self.client_priv_address = str_to_multiple_ip(self.server.recv())
-            self.logger.info("Client's addresses are", self.client_pub_address, self.client_priv_address)
+            self.logger.info("Client's addresses are", multiple_ip_to_str((self.client_pub_address, self.client_priv_address)))
 
             while self.client == None or not self.client.connected:
                 self.connect_client()
