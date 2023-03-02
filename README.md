@@ -15,4 +15,5 @@ for any end user being told to use this repository by someone with a LED setup (
 todo:
   - add support for RGBW
   - allow client to add pixels in RGB or RBG independent of what setting the pi is on
-  - fully implement adafruit_pixelbuf.PixelBuf (https://github.com/adafruit/Adafruit_CircuitPython_Pixelbuf/blob/dafbe8b7b19fcdbde7ff93f1cede4a0f5e1b0ec3/adafruit_pixelbuf.py#L31)
+  - fully (or at least correctly) implement adafruit_pixelbuf.PixelBuf (https://github.com/adafruit/Adafruit_CircuitPython_Pixelbuf/blob/dafbe8b7b19fcdbde7ff93f1cede4a0f5e1b0ec3/adafruit_pixelbuf.py#L31)
+  - fix tcp connections not realizing when the endpoint is dead (usually through keyboardinterrupt)
