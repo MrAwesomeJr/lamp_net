@@ -1,6 +1,7 @@
 import socket
 from lamp_net_client.functions import *
 import logging
+import time
 
 
 class Pixels:
@@ -73,6 +74,10 @@ class Pixels:
             print(hex_pixels)
             print(msg)
         self.pi.send(msg)
+
+        # technically not required but the pi can't handle so many frames
+        # the lights run at around 200-250 fps max so the buffer fills
+        time.sleep(0.005)
 
 
 class Client:
