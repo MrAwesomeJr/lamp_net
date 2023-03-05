@@ -16,4 +16,5 @@ todo:
   - add support for RGBW
   - allow client to add pixels in RGB or RBG independent of what setting the pi is on
   - fully (or at least correctly) implement adafruit_pixelbuf.PixelBuf (https://github.com/adafruit/Adafruit_CircuitPython_Pixelbuf/blob/dafbe8b7b19fcdbde7ff93f1cede4a0f5e1b0ec3/adafruit_pixelbuf.py#L31)
-  - fix tcp connections not realizing when the endpoint is dead (usually through keyboardinterrupt)
+  - fix tcp connections not realizing when the endpoint is dead (usually through keyboardinterrupt) and therefore allow server/pi to continue functioning after an unexpected disconnect
+  - add client size visualizer (simulator?) for editing of colors and things
