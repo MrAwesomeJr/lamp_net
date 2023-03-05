@@ -27,10 +27,13 @@ class Pixels:
         return self._pixels[item]
 
     def __setitem__(self, key, value):
-        try:
+        if isinstance(value, list):
+            bright_values = []
+            for i in value:
+                bright_values.append(tuple(map(lambda x: x*self.brightness, i)))
+            self._pixels[key] = bright_values
+        else:
             self._pixels[key] = list(map(lambda x: x*self.brightness, value))
-        except TypeError:
-            print(key)
 
         if self.auto_write:
             self.show()
@@ -69,10 +72,6 @@ class Pixels:
             hex_pixels[index] = map(lambda x: f'{int(x*self._brightness):0<2x}', pixel)
         string_pixels = map(lambda x: "".join(x), hex_pixels)
         msg = "".join(string_pixels)
-        if len(msg) not in [0, 300]:
-            print(self._pixels)
-            print(hex_pixels)
-            print(msg)
         self.pi.send(msg)
 
         # technically not required but the pi can't handle so many frames
